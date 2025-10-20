@@ -1,6 +1,6 @@
 # DynamoDB table update alerts
 
-This is an AWS SAM application which posts update messages to an SNS topic when a change is made to the items in a DynamoDB table.
+This is an AWS SAM application which posts update messages formatted for Slack to an SNS topic when a change is made to the items in a DynamoDB table.
 
 It's designed to provide reactive monitoring for infrequently modified tables with critical data.
 It's deployed separately to the application stack that owns the target table, and takes the table stream and SNS topic as parameters. This allows it to fit in with other sources of alerts (eg. Cloudwatch) and should mean it has minimal setup effort.
@@ -22,6 +22,7 @@ Run the deployment script to deploy both stacks:
 ```
 
 This will:
+
 1. Deploy the prerequisites stack with a DynamoDB table and SNS topic
 2. Extract the table stream ARN, topic ARN, and table name from the stack outputs
 3. Deploy the alerter stack with the Lambda function that monitors the table stream
