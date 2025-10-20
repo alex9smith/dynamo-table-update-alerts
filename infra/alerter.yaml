@@ -51,6 +51,7 @@ Resources:
           POWERTOOLS_SERVICE_NAME: dynamo-table-update-alerts
       Policies:
         - DynamoDBStreamReadPolicy:
+            TableName: !Ref TableName
             StreamName: !Select [3, !Split ["/", !Ref TableStreamArn]]
         - SNSPublishMessagePolicy:
             TopicName: !Select [5, !Split [":", !Ref TopicArn]]
