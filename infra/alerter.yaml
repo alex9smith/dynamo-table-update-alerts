@@ -29,6 +29,8 @@ Resources:
           TOPIC_ARN: !Ref TopicArn
           TABLE_NAME: !Ref TableName
       Policies:
+        - DynamoDBStreamReadPolicy:
+            StreamName: !Select [3, !Split ["/", !Ref TableStreamArn]]
         - SNSPublishMessagePolicy:
             TopicName: !Select [5, !Split [":", !Ref TopicArn]]
       Events:
