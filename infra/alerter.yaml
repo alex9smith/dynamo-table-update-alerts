@@ -16,14 +16,29 @@ Parameters:
     Description: "DynamoDB table name"
 
 Resources:
+  DeadLetterQueue:
+    Type: AWS::SQS::Queue
+    Properties:
+      QueueName: !Sub "${AWS::StackName}-dlq"
+      MessageRetentionPeriod: 1209600 # 14 days
+      Tags:
+        - Key: Project
+          Value: dynamo-table-update-alerts
+
   AlerterFunction:
     Type: AWS::Serverless::Function
+    DependsOn: LogGroup
     Properties:
       CodeUri: ../src/
       Handler: alerter.handler
       Runtime: nodejs22.x
       Architectures:
         - arm64
+      Timeout: 30
+      MemorySize: 256
+      DeadLetterQueue:
+        Type: SQS
+        TargetArn: !GetAtt DeadLetterQueue.Arn
       Environment:
         Variables:
           TOPIC_ARN: !Ref TopicArn
@@ -33,9 +48,25 @@ Resources:
             StreamName: !Select [3, !Split ["/", !Ref TableStreamArn]]
         - SNSPublishMessagePolicy:
             TopicName: !Select [5, !Split [":", !Ref TopicArn]]
+        - SQSSendMessagePolicy:
+            QueueName: !GetAtt DeadLetterQueue.QueueName
+      Tags:
+        Project: dynamo-table-update-alerts
       Events:
         DynamoDBStream:
           Type: DynamoDB
           Properties:
             Stream: !Ref TableStreamArn
             StartingPosition: LATEST
+            MaximumBatchingWindowInSeconds: 5
+            BatchSize: 10
+            MaximumRetryAttempts: 3
+
+  LogGroup:
+    Type: AWS::Logs::LogGroup
+    Properties:
+      LogGroupName: !Sub "/aws/lambda/${AlerterFunction}"
+      RetentionInDays: 7
+      Tags:
+        - Key: Project
+          Value: dynamo-table-update-alerts
