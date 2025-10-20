@@ -1,0 +1,17 @@
+{
+  "name": "dynamo-table-update-alerts",
+  "version": "1.0.0",
+  "description": "",
+  "license": "MIT",
+  "author": "Alex Whitehead-Smith",
+  "type": "module",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "example": "tsx ./src/example.ts"
+  },
+  "devDependencies": {
+    "@tsconfig/node24": "^24.0.1",
+    "@tsconfig/strictest": "^2.0.6",
+    "tsx": "^4.20.6"
+  }
+}
