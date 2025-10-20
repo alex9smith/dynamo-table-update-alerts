@@ -6,12 +6,17 @@
   "author": "Alex Whitehead-Smith",
   "type": "module",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1",
+    "test": "vitest",
     "example": "tsx ./src/example.ts"
   },
   "devDependencies": {
+    "@aws-sdk/client-sns": "^3.913.0",
     "@tsconfig/node24": "^24.0.1",
     "@tsconfig/strictest": "^2.0.6",
-    "tsx": "^4.20.6"
+    "@types/aws-lambda": "^8.10.145",
+    "@types/node": "^24.8.1",
+    "aws-lambda": "^1.0.7",
+    "tsx": "^4.20.6",
+    "vitest": "^2.1.8"
   }
 }

@@ -1,0 +1,39 @@
+AWSTemplateFormatVersion: "2010-09-09"
+Transform: AWS::Serverless-2016-10-31
+Description: "DynamoDB table update alerter"
+
+Parameters:
+  TableStreamArn:
+    Type: String
+    Description: "DynamoDB table stream ARN"
+
+  TopicArn:
+    Type: String
+    Description: "SNS topic ARN for alerts"
+
+  TableName:
+    Type: String
+    Description: "DynamoDB table name"
+
+Resources:
+  AlerterFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      CodeUri: ../src/
+      Handler: alerter.handler
+      Runtime: nodejs22.x
+      Architectures:
+        - arm64
+      Environment:
+        Variables:
+          TOPIC_ARN: !Ref TopicArn
+          TABLE_NAME: !Ref TableName
+      Policies:
+        - SNSPublishMessagePolicy:
+            TopicName: !Select [5, !Split [":", !Ref TopicArn]]
+      Events:
+        DynamoDBStream:
+          Type: DynamoDB
+          Properties:
+            Stream: !Ref TableStreamArn
+            StartingPosition: LATEST

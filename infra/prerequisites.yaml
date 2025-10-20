@@ -1,0 +1,41 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Description: 'Prerequisites stack with DynamoDB table and SNS topic'
+
+Resources:
+  DynamoTable:
+    Type: AWS::DynamoDB::Table
+    Properties:
+      TableName: !Sub '${AWS::StackName}-table'
+      BillingMode: PAY_PER_REQUEST
+      AttributeDefinitions:
+        - AttributeName: id
+          AttributeType: S
+      KeySchema:
+        - AttributeName: id
+          KeyType: HASH
+      StreamSpecification:
+        StreamViewType: NEW_AND_OLD_IMAGES
+
+  AlertsTopic:
+    Type: AWS::SNS::Topic
+    Properties:
+      TopicName: !Sub '${AWS::StackName}-alerts'
+
+Outputs:
+  TableName:
+    Description: 'DynamoDB table name'
+    Value: !Ref DynamoTable
+    Export:
+      Name: !Sub '${AWS::StackName}-TableName'
+
+  TableStreamArn:
+    Description: 'DynamoDB table stream ARN'
+    Value: !GetAtt DynamoTable.StreamArn
+    Export:
+      Name: !Sub '${AWS::StackName}-TableStreamArn'
+
+  TopicArn:
+    Description: 'SNS topic ARN'
+    Value: !Ref AlertsTopic
+    Export:
+      Name: !Sub '${AWS::StackName}-TopicArn'
