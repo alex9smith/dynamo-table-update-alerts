@@ -43,6 +43,8 @@ Resources:
         Variables:
           TOPIC_ARN: !Ref TopicArn
           TABLE_NAME: !Ref TableName
+          LOG_LEVEL: INFO
+          POWERTOOLS_SERVICE_NAME: dynamo-table-update-alerts
       Policies:
         - DynamoDBStreamReadPolicy:
             StreamName: !Select [3, !Split ["/", !Ref TableStreamArn]]

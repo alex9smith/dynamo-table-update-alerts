@@ -1,6 +1,8 @@
 import { DynamoDBStreamEvent, DynamoDBStreamHandler, DynamoDBRecord } from 'aws-lambda';
 import { SNSClient, PublishCommand } from '@aws-sdk/client-sns';
+import { Logger } from '@aws-lambda-powertools/logger';
 
+const logger = new Logger();
 const sns = new SNSClient({});
 const topicArn = process.env.TOPIC_ARN!;
 const tableName = process.env.TABLE_NAME!;
@@ -38,15 +40,29 @@ export const buildMessage = (record: DynamoDBRecord): string => {
 };
 
 export const handler: DynamoDBStreamHandler = async (event: DynamoDBStreamEvent) => {
+  logger.info('Processing DynamoDB stream event', { recordCount: event.Records.length });
+  
   for (const record of event.Records) {
     if (record.eventName === 'INSERT' || record.eventName === 'MODIFY' || record.eventName === 'REMOVE') {
+      logger.info('Processing record', { 
+        eventName: record.eventName, 
+        tableName,
+      });
+      
       const message = buildMessage(record);
       
-      await sns.send(new PublishCommand({
-        TopicArn: topicArn,
-        Message: message,
-        Subject: `${tableName} Table Update Alert`
-      }));
+      try {
+        await sns.send(new PublishCommand({
+          TopicArn: topicArn,
+          Message: message,
+          Subject: `${tableName} Table Update Alert`
+        }));
+        
+        logger.info('Alert sent successfully', { eventName: record.eventName });
+      } catch (error) {
+        logger.error('Failed to send alert', { error, eventName: record.eventName });
+        throw error;
+      }
     }
   }
 };
