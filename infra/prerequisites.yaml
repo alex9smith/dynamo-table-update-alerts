@@ -2,6 +2,36 @@ AWSTemplateFormatVersion: '2010-09-09'
 Description: 'Prerequisites stack with DynamoDB table and SNS topic'
 
 Resources:
+  EncryptionKey:
+    Type: AWS::KMS::Key
+    Properties:
+      Description: 'KMS key for SNS topic encryption'
+      KeyPolicy:
+        Statement:
+          - Sid: Enable IAM User Permissions
+            Effect: Allow
+            Principal:
+              AWS: !Sub 'arn:aws:iam::${AWS::AccountId}:root'
+            Action: 'kms:*'
+            Resource: '*'
+          - Sid: Allow SNS service
+            Effect: Allow
+            Principal:
+              Service: sns.amazonaws.com
+            Action:
+              - kms:Decrypt
+              - kms:GenerateDataKey
+            Resource: '*'
+      Tags:
+        - Key: Project
+          Value: dynamo-table-update-alerts
+
+  EncryptionKeyAlias:
+    Type: AWS::KMS::Alias
+    Properties:
+      AliasName: !Sub 'alias/${AWS::StackName}-sns-key'
+      TargetKeyId: !Ref EncryptionKey
+
   DynamoTable:
     Type: AWS::DynamoDB::Table
     Properties:
@@ -20,6 +50,7 @@ Resources:
     Type: AWS::SNS::Topic
     Properties:
       TopicName: !Sub '${AWS::StackName}-alerts'
+      KmsMasterKeyId: !Ref EncryptionKey
 
 Outputs:
   TableName:
@@ -39,3 +70,9 @@ Outputs:
     Value: !Ref AlertsTopic
     Export:
       Name: !Sub '${AWS::StackName}-TopicArn'
+
+  EncryptionKeyArn:
+    Description: 'KMS key ARN for SNS encryption'
+    Value: !GetAtt EncryptionKey.Arn
+    Export:
+      Name: !Sub '${AWS::StackName}-EncryptionKeyArn'

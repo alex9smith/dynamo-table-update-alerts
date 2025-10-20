@@ -15,6 +15,10 @@ Parameters:
     Type: String
     Description: "DynamoDB table name"
 
+  EncryptionKeyArn:
+    Type: String
+    Description: "KMS key ARN for SNS encryption"
+
 Resources:
   DeadLetterQueue:
     Type: AWS::SQS::Queue
@@ -52,6 +56,12 @@ Resources:
             TopicName: !Select [5, !Split [":", !Ref TopicArn]]
         - SQSSendMessagePolicy:
             QueueName: !GetAtt DeadLetterQueue.QueueName
+        - Statement:
+            - Effect: Allow
+              Action:
+                - kms:GenerateDataKey
+                - kms:Encrypt
+              Resource: !Ref EncryptionKeyArn
       Tags:
         Project: dynamo-table-update-alerts
       Events:
