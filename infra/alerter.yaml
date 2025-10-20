@@ -31,7 +31,6 @@ Resources:
 
   AlerterFunction:
     Type: AWS::Serverless::Function
-    DependsOn: LogGroup
     Properties:
       CodeUri: ../src/
       Handler: alerter.handler
@@ -87,8 +86,8 @@ Resources:
   DLQAlarm:
     Type: AWS::CloudWatch::Alarm
     Properties:
-      AlarmName: !Sub '${AWS::StackName}-dlq-messages'
-      AlarmDescription: 'Alert when messages appear in the dead letter queue'
+      AlarmName: !Sub "${AWS::StackName}-dlq-messages"
+      AlarmDescription: "Alert when messages appear in the dead letter queue"
       MetricName: ApproximateNumberOfVisibleMessages
       Namespace: AWS/SQS
       Statistic: Sum
